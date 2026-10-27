@@ -1,5 +1,5 @@
 /* =========================================================================
-   TODO [F5] Maquetación responsiva (mobile first)
+   Maquetación responsiva (mobile first)
 
    Requisitos:
    1. .layout
@@ -21,22 +21,57 @@
    ========================================================================= */
 
 .layout {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  box-sizing: border-box;
 }
 
 .panel-form {
+  min-width: 0;
 }
 
 .panel-listado {
+  min-width: 0;
 }
 
 .barra-listado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .lista-equipos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 1rem;
 }
 
 .paginacion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 @media (min-width: 900px) {
+  .layout {
+    grid-template-columns: 320px minmax(0, 1fr);
+  }
+
+  .panel-form {
+    position: sticky;
+    top: 1rem;
+    align-self: start;
+  }
 }

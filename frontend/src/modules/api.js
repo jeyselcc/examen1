@@ -3,7 +3,7 @@ import { ErrorApi } from "./errores.js";
 import { obtenerToken, olvidarSesion } from "./auth.js";
 
 /**
- * TODO [F1] Cliente HTTP único de la aplicación.
+ * Cliente HTTP único de la aplicación.
  *
  * request(ruta, opciones) debe:
  *  1. Construir la URL como BASE_URL + ruta   (ej. request("/equipos?page=2"))
@@ -20,6 +20,59 @@ import { obtenerToken, olvidarSesion } from "./auth.js";
  * Ningún otro archivo debe llamar a fetch directamente (salvo auth.js, ya hecho).
  */
 export const request = async (ruta, opciones = {}) => {
-  // TODO
-  throw new Error("TODO [F1]: request() no implementado");
+  const controlador = new AbortController();
+
+  const temporizador = setTimeout(() => {
+    controlador.abort();
+  }, TIEMPO_MAXIMO_MS);
+
+  const encabezados = {
+    Accept: "application/json",
+    ...opciones.headers,
+  };
+
+  const token = obtenerToken();
+
+  if (token) {
+    encabezados.Authorization = `Bearer ${token}`;
+  }
+
+  let cuerpo = opciones.body;
+
+  if (
+    cuerpo !== null &&
+    typeof cuerpo === "object" &&
+    !(cuerpo instanceof FormData)
+  ) {
+    encabezados["Content-Type"] = "application/json";
+    cuerpo = JSON.stringify(cuerpo);
+  }
+
+  try {
+    const respuesta = await fetch(BASE_URL + ruta, {
+      ...opciones,
+      headers: encabezados,
+      body: cuerpo,
+      signal: controlador.signal,
+    });
+
+    if (respuesta.status === 204) {
+      return null;
+    }
+
+    const datos = await respuesta.json().catch(() => ({}));
+
+    if (!respuesta.ok) {
+      if (respuesta.status === 401) {
+        olvidarSesion();
+        window.location.reload();
+      }
+
+      throw new ErrorApi(respuesta.status, datos);
+    }
+
+    return datos;
+  } finally {
+    clearTimeout(temporizador);
+  }
 };
