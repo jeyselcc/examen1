@@ -7,6 +7,7 @@ use App\Http\Requests\GuardarEquipoRequest;
 use App\Models\Equipo;
 use App\Services\EquipoService;
 use Illuminate\Http\Request;
+use App\Http\Resources\EquipoResource;
 
 /**
  * TODO [B3] Controlador delgado: recibe, delega en el servicio y responde.
@@ -33,31 +34,47 @@ class EquipoController extends Controller
 
     public function index(Request $request)
     {
-        abort(501, 'Pendiente de implementar');
+        $porPagina = min(50, max(1, (int) $request->query('per_page', 10)));
+
+        $equipos = $this->service->listar(
+            $request->query('q'),
+            $request->query('estado'),
+            $porPagina
+        );
+
+        return EquipoResource::collection($equipos);
     }
 
     public function show(Equipo $equipo)
     {
-        abort(501, 'Pendiente de implementar');
+        return new EquipoResource($equipo->load('categoria'));
     }
 
     public function store(GuardarEquipoRequest $request)
     {
-        abort(501, 'Pendiente de implementar');
+        $equipo = $this->service->crear($request->validated());
+
+        return (new EquipoResource($equipo))
+            ->response()
+            ->setStatusCode(201)
+            ->header('Location', url("/api/equipos/{$equipo->id}"));
     }
 
     public function update(GuardarEquipoRequest $request, Equipo $equipo)
     {
-        abort(501, 'Pendiente de implementar');
+        $equipo = $this->service->actualizar($equipo, $request->validated());
+        return new EquipoResource($equipo);
     }
 
     public function destroy(Equipo $equipo)
     {
-        abort(501, 'Pendiente de implementar');
+        $this->service->eliminar($equipo);
+        return response()->noContent();
     }
 
     public function prestar(Equipo $equipo)
     {
-        abort(501, 'Pendiente de implementar');
+         $equipo = $this->service->prestar($equipo);
+        return new EquipoResource($equipo);
     }
 }
